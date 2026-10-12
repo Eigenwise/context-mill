@@ -1,10 +1,9 @@
 # Compose and publish the setup report
 
 Compose the full setup report as markdown, then publish it in **one**
-`publish_handoff` call — that call is how the report reaches the user's wizard
-session. Do not write a report file. The same markdown is then mirrored into a
-shareable PostHog notebook (see the notebook skill), whose URL you emit with
-the `[NOTEBOOK_URL]` marker.
+`publish_handoff` call. That call is how the report reaches the user's wizard
+session. Do not write a report file. The same call mirrors the markdown into a
+shareable PostHog notebook. The notebook skill says what its result means.
 
 ## Sources
 
@@ -76,13 +75,13 @@ Keep it skimmable. This is the artifact the user opens after the run.
 
 ## Publish
 
-Compose the entire report in one model turn — start it with an `#` H1 heading —
-then call `publish_handoff` once, passing the full markdown as `content`:
+Compose the entire report in one model turn, starting with an `#` H1 heading.
+Then call `publish_handoff` once, passing the full markdown as `content`:
 
 ```
 publish_handoff({ "content": "<the full report markdown>" })
 ```
 
-Do not fall back to writing a file. After the call goes through, mirror the
-same markdown into a PostHog notebook and emit its URL with the
-`[NOTEBOOK_URL]` marker, following the notebook skill.
+Do not fall back to writing a file. Then follow the notebook skill for what
+the result means. The notebook is best effort and never fails this step.
+Record its outcome in your final message. Do not call `publish_handoff` again.
