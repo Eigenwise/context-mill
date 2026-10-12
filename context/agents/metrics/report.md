@@ -41,4 +41,4 @@ A user who reads only your report knows what their service measures, where
 each number comes from, what still needs them, and where to look first. The
 report went through one `publish_handoff` call. The notebook mirror is best
 effort: when it was created, the user has its link, and when it wasn't, your
-handoff says why. A missing notebook never fails this task.
+final message says why, and when an update failed, that the notebook holds the earlier version. A missing notebook never fails this task.

@@ -50,4 +50,4 @@ failed with reasons, the dashboard link, any build conflict in full,
 and the next steps for the user. Every claim in it traces to a handoff, and
 what the run could not confirm reads as unconfirmed. The notebook mirror is
 best effort: when it was created, the user has its link, and when it wasn't,
-your handoff says why. A missing notebook never fails this task.
+your final message says why, and when an update failed, that the notebook holds the earlier version. A missing notebook never fails this task.

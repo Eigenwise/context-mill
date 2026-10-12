@@ -6,19 +6,24 @@ The `publish_handoff` call and the notebook are how the report reaches the user.
 
 The notebook is best effort. The report already reached the user through
 `publish_handoff`, so a notebook that can't be created never fails your task.
-Say in your handoff that it wasn't created and why, then finish.
+Say in your task's own handoff (your final message, not a second
+`publish_handoff` call) that it wasn't created and why, then finish.
 
 ## `publish_handoff` creates it
 
 Your one `publish_handoff` call creates the notebook from the same markdown.
 You don't pass anything extra. Its result tells you what happened:
 
-- **The result names a notebook URL.** The mirror is done. Don't create
+- **The result says the notebook was created or updated.** The mirror is done. Don't create
   another notebook, and don't emit the `[NOTEBOOK_URL]` marker. The wizard
   already shows the link.
-- **The result says the notebook was not created.** Don't retry through
-  `posthog_exec`, because the same login fails the same way. Put the reason
-  in your handoff.
+- **The result says the notebook was not created.** The wizard already
+  retried once, so the reason is final. Don't retry through `posthog_exec`.
+  Put the reason in your task's own handoff.
+- **The result says the notebook was not updated.** The notebook exists and
+  holds the earlier report, and the wizard already shows its link. Don't
+  create another notebook. Say in your task's own handoff that the notebook
+  holds the earlier version, and why.
 - **The result doesn't mention a notebook.** This wizard predates the
   built-in notebook. Mirror the report yourself, as below.
 
@@ -49,8 +54,8 @@ quotes around it. The whole argument goes on one line, with the report's
 newlines and quotes escaped as normal JSON string encoding (`\n`, `\"`, `\\`):
 
 ```
-call notebooks-create-markdown {"title": "PostHog setup (wizard) – acme-shop", "markdown": "## Events captured\n\n| Event | Where |\n|---|---|\n| `user_signed_up` | `src/auth.ts` |\n"}
-call notebooks-create {"title": "PostHog setup (wizard) – acme-shop", "content": {"type": "doc", "content": [{"type": "ph-markdown-notebook", "attrs": {"nodeId": "markdown-notebook-v2", "markdown": "# PostHog setup (wizard) – acme-shop\n\n## Events captured\n\n| Event | Where |\n|---|---|\n| `user_signed_up` | `src/auth.ts` |\n"}}]}}
+call notebooks-create-markdown {"title": "PostHog setup (wizard) – acme-shop", "markdown": "## Events captured\n\n| Event | Where |\n|---|---|\n| `user_signed_up` | `src/auth.ts` |\n\nInitialized with \"capture_exceptions: true\"\n"}
+call notebooks-create {"title": "PostHog setup (wizard) – acme-shop", "content": {"type": "doc", "content": [{"type": "ph-markdown-notebook", "attrs": {"nodeId": "markdown-notebook-v2", "markdown": "# PostHog setup (wizard) – acme-shop\n\n## Events captured\n\n| Event | Where |\n|---|---|\n| `user_signed_up` | `src/auth.ts` |\n\nInitialized with \"capture_exceptions: true\"\n"}}]}}
 ```
 
 Wrong, and their exact errors:

@@ -84,3 +84,4 @@ publish_handoff({ "content": "<the full report markdown>" })
 
 Do not fall back to writing a file. Then follow the notebook skill for what
 the result means. The notebook is best effort and never fails this step.
+Record its outcome in your final message. Do not call `publish_handoff` again.
