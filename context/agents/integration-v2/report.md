@@ -19,9 +19,9 @@ Compose the setup report summarizing what this integration did, drawing only on
 what the run itself recorded: the queue log and event plan in
 `.posthog-wizard-cache/` (`queue.json` and `.posthog-events.json`), and the
 handoff each step left behind. Then publish it with a single `publish_handoff`
-call, and mirror the same markdown into a shareable PostHog notebook, emitting
-its URL with the `[NOTEBOOK_URL]` marker. Do not write a report file — the
-handoff call and the notebook are how the report reaches the user.
+call. The same call mirrors the markdown into a shareable PostHog notebook. The notebook skill says what the result
+means and covers older wizards. Do not write a report file. The handoff call
+and the notebook are how the report reaches the user.
 
 Separate what the run verified from what it did not. A passing build proves the
 code compiles, not that events flow — never write that an event was captured
@@ -48,6 +48,6 @@ installed and initialized, the events captured, whether identify was wired or
 skipped, error tracking added, AI Observability and Logs configured, skipped, or
 failed with reasons, the dashboard link, any build conflict in full,
 and the next steps for the user. Every claim in it traces to a handoff, and
-what the run could not confirm reads as unconfirmed. The same report is
-mirrored into a PostHog notebook whose URL is emitted with the
-`[NOTEBOOK_URL]` marker.
+what the run could not confirm reads as unconfirmed. The notebook mirror is
+best effort: when it was created, the user has its link, and when it wasn't,
+your handoff says why. A missing notebook never fails this task.
