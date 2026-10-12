@@ -54,6 +54,15 @@ reach for Docker to check your edit. Let the build check API names and types: wr
 build, and open an SDK's type declarations only to fix an error the build
 reports.
 
+Build, never run: no command that installs or launches the app (`expo run:*`,
+`react-native run-*`, `flutter run`), because it opens a simulator or an
+emulator on the user's machine. Leave no build output the project does not
+ignore: in Go, check with `go vet ./...`, because `go build ./...` writes a
+main package's binary into the project root. Your shell gets a reduced
+environment, so a build that cannot find an SDK (`SDK location not found`)
+failed because of this shell, not your edit: do not retry it, and say so in
+your handoff.
+
 ## Do not copy the SDK's own listeners
 
 Exception autocapture already registers the global handlers: `window.onerror`

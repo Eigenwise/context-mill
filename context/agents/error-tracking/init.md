@@ -18,7 +18,10 @@ Make sure PostHog is initialized. If the project already has a working
 `posthog.init(...)` (or the framework's equivalent) with its env keys wired,
 leave it alone and say so in your handoff. If it doesn't, create it following
 your skill — it owns the how: the framework's init point, the env-var wiring
-through the wizard tools, and `.env.example`.
+through the wizard tools, and `.env.example`. The `credentials` task may write
+`.env.example` beside you, so read it right before you change it and add your
+lines with `edit`; never `write` over it once it exists, or the upload
+variables it documented are lost.
 
 You exist in this flow because the user asked for error tracking on a repo
 whose PostHog init is missing or unproven. Initialize the SDK so exceptions can

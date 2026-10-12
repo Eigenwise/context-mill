@@ -45,11 +45,22 @@ reused them. Otherwise:
    handoff and leave it. After a few attempts, stop and hand off what still
    fails.
 
+Build, never run. A command that installs or launches the app (`expo run:*`,
+`react-native run-*`, `flutter run`, `./gradlew install*`) opens a simulator
+or an emulator on the user's machine. On an Expo app whose `android/` and
+`ios/` folders are generated, build the JavaScript bundle instead: `npx expo
+export --source-maps --platform <platform>`.
+
 When the upload is a separate `posthog-cli` command rather than part of the
-build, you cannot run it: build only, and say so. A missing toolchain, or a
-local interpreter too old for a version this run pinned, is the environment,
-not the setup: say so and finish, and never lower a version to make a local
-install pass.
+build, or the build sits in a `make` target or a shell script, you cannot run
+those: run the build command itself, and say so. Never add a package script to
+get past a blocked command. Your shell gets a reduced
+environment: `ANDROID_HOME` and other variables from the user's shell do not
+reach it. A build that cannot find an SDK (`SDK location not found`) failed
+because of this shell, not the project: do not retry it, and do not give the
+user a setup step for it. A missing toolchain, or a local interpreter too old
+for a version this run pinned, is the environment, not the setup: say so and
+finish, and never lower a version to make a local install pass.
 
 Finish this task `done` even when the build still fails. Your handoff gives
 the command, the error, and whether this run caused it, and the report turns

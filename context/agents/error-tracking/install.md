@@ -26,6 +26,10 @@ that has both is not yours to add. The `capture-exceptions` task adds it when
 it wires server-side capture, so the manifest never carries a library no code
 imports.
 
+In a Python project, install into the virtualenv the project already keeps in
+its directory. When it has none, add the package to the manifest and stop. Do
+not create one: it would stay behind in the user's project.
+
 ## How you know you succeeded
 
 The SDK is declared in the manifest at a real version — whether it already

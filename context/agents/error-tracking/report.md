@@ -67,7 +67,10 @@ Then cover, briefly and concretely:
 - What the `verify` handoff found: the build command it ran and whether it
   passed. When it uploaded, name the release and how many files went up, so
   the user knows the first symbol set is already in PostHog. Anything still
-  failing is a follow-up in the warning block.
+  failing is a follow-up in the warning block. When the build could not run in
+  the wizard's shell (an SDK it could not find, a blocked command), the
+  follow-up is to run that build command once themselves, not to set anything
+  up: their own shell has what the wizard's lacked.
 - When it was skipped: one line saying why — readable stack traces on this
   platform, or that Astro is not supported by the uploader. An outcome, not an
   apology. Say plainly that the build command was left untouched.

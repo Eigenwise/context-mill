@@ -37,12 +37,12 @@ translating any `npm install` the skill or docs show (`pnpm add -D …`,
 wrong manager, never a flag to retry with.
 
 When the upload step you wire runs a machine-global `posthog-cli` rather than
-one from the project's own dependencies, check that it is on the `PATH`
-(`command -v posthog-cli`). Do not try to install it: a global install is
-blocked for you, and the wizard already tried before your task. When it is
-missing, name it in your handoff as a manual follow-up — run
-`npm install -g @posthog/cli@latest` before the next release build — because
-without it the upload step cannot run.
+one from the project's own dependencies, do not try to install it or check for
+it: a global install, `posthog-cli` itself, and `command -v` are blocked for
+you, and the wizard already tried the install before your task. Name it in
+your handoff as a follow-up for every other machine that runs the release
+build — `npm install -g @posthog/cli@latest` — because without it the upload
+step cannot run.
 
 When your changes make the build emit a bundle to a new directory (`dist/`,
 `build/`), check that some script actually runs that output. A project whose
@@ -111,6 +111,23 @@ A failure that was there before your changes is not yours: note it in your
 handoff and leave it. Let the build check option names and types: write from
 your skill, build, and open a plugin's type declarations only to fix an error
 the build reports.
+
+Build, never run. A command that installs or launches the app (`expo run:*`,
+`react-native run-*`, `flutter run`, `./gradlew install*`) opens a simulator
+or an emulator on the user's machine, even where your skill names it as the
+build. On an Expo app whose `android/` and `ios/` folders are generated, build
+the JavaScript bundle instead: `npx expo export --source-maps --platform
+<platform>`. Your shell blocks `make`, shell scripts, and a Gradle wrapper
+outside the project root: when you put the build in a `make` target or a
+script, run the build command inside it directly. Never add a package script
+to get past a blocked command. Skip it, and say in your handoff what you could
+not run.
+
+Your shell gets a reduced environment: `ANDROID_HOME` and other variables from
+the user's shell do not reach it. A build that cannot find an SDK (`SDK
+location not found`) failed because of this shell, not the project. Do not
+retry it, and do not give the user a setup step for it: say the build could
+not run here.
 
 The `credentials` task may not have written the upload credentials yet, so this
 build may run without them. It has to pass either way. A teammate's checkout
