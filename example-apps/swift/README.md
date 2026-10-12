@@ -52,7 +52,7 @@ import PostHog
 
 // The project token is a public client-side key, so it's safe to ship in the
 // binary. Replace the placeholder with your token from the PostHog project settings.
-let config = PostHogConfig(apiKey: "<your-project-token>", host: "https://us.i.posthog.com")
+let config = PostHogConfig(projectToken: "<your-project-token>", host: "https://us.i.posthog.com")
 config.captureApplicationLifecycleEvents = true
 PostHogSDK.shared.setup(config)
 ```
