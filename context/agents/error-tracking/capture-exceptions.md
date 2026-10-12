@@ -7,7 +7,7 @@ effort_pi: medium
 model_sdk: claude-sonnet-5
 effort_sdk: high
 skills: [integration-v2-error-tracking-step, posthog-best-practices]
-allowedTools: [Read, Write, Edit, Glob, Grep]
+allowedTools: [Read, Write, Edit, Glob, Grep, Bash]
 disallowedTools: [enqueue_task]
 dependsOn: [install, init]
 ---
@@ -18,8 +18,15 @@ Make the errors the app does not catch reach PostHog, by whatever means the
 SDK offers for that. Which means depends on the SDK: some autocapture
 exceptions once you enable it at init, some wire into the framework's own
 error handler, some give you a boundary to mount at the app entry. Follow the
-docs and the reference example for this one, and set it up in one place —
+docs and the reference example for this one, and set it up once per runtime —
 never manual capture calls sprinkled across files.
+
+An app that runs code on a server as well as in the browser has two runtimes,
+and each needs its own capture. Cover every runtime the docs cover for this
+framework and the app actually uses: the server side takes the SDK's server
+library, where the framework hands you its errors (for Next.js,
+`onRequestError` in `instrumentation.ts`). A browser-only setup leaves every
+server error uncaptured. A fully static app has no server runtime to cover.
 
 A page often shows two setups side by side: a global initializer, and an
 explicit client you hold. Follow one of them the whole way through. Taking the
@@ -30,12 +37,22 @@ The SDK is installed and initialized — either it already was, or the install
 and init tasks before you did it (see their handoffs); build on that, do not
 re-check it.
 
-This is an instrument-only task. Do not install dependencies, run the build,
-run tests, or start the app — the user-driven test-setup step at the end of
-the flow verifies, when the user wants it. Do not touch the build config
-either way; when the flow includes a configure task, it owns those files.
-Stay inside this project's directory and set up that one place; that is the
-whole job.
+Install nothing except the server library your server-side capture imports,
+when the manifest lacks it: add it with the project's package manager
+(`detect_package_manager`). Do not run tests or start the app, and do not touch
+the build config: when the flow includes a configure task, it owns those files.
+Stay inside this project's directory and set up capture in those places; that
+is the whole job.
+
+Once your edits are in, run the project's build, or its typecheck when that
+covers your files and is quicker, and fix what your edits broke. A failure
+that was there before your edits is not yours: note it in your handoff and
+leave it. Only a build the project defines in this checkout counts: a package
+script or a compiler. Most Python, Ruby, and PHP apps have none, and then
+there is nothing to run: do not create environments, install packages, or
+reach for Docker to check your edit. Let the build check API names and types: write from the docs and
+build, and open an SDK's type declarations only to fix an error the build
+reports.
 
 ## Do not copy the SDK's own listeners
 
@@ -60,10 +77,12 @@ one.
 
 ## How you know you succeeded
 
-An error the app does not catch reaches PostHog, through the mechanism this
-SDK gives you rather than one you invented, and no global error listener of
-your own sits beside the SDK's autocapture. You did not install anything, run
-a build, lint, or tests, search outside the project, or read through the whole
-app or hand-wrap individual components or routes. Your handoff names the files
-you changed and the capture mechanism, so the report can explain it to the
+An error the app does not catch reaches PostHog from every runtime the app
+runs in, through the mechanism each SDK gives you rather than one you invented,
+and every PostHog library in the manifest is imported. No global error listener
+of your own sits beside the SDK's autocapture. The project builds as well as it
+did before your edits. You installed nothing but the server library your
+capture imports, and did not run tests, search outside the project, or read
+through the whole app or hand-wrap individual components or routes. Your handoff names the files you changed, the capture mechanism, and
+the build command you ran with its result, so the report can explain it to the
 user.

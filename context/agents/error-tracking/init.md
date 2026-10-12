@@ -89,20 +89,12 @@ token as a literal in the committed `src/environments/*` files. This is the
 skill's "no valid environment to read from" case, and the public token is
 publishable — it ships inside the browser bundle either way.
 
-## The init has to type-check
+## Leave the build to later tasks
 
-You cannot run the build either. So in a project the compiler checks —
-TypeScript, or JavaScript under `checkJs` — the init has to compile by
-construction. `process.env.ANYTHING` is `string | undefined`, and the SDK
-constructor wants a `string`.
-
-Pass the variable that you checked. `if (!key) { … } else { new PostHog(key, …) }`
-narrows `key` to `string`. A check on a different variable does not: store the
-missing name in `missing`, test `missing`, then pass `key`, and the compiler
-still sees `string | undefined`. The build then stops with "Argument of type
-'string | undefined' is not assignable to parameter of type 'string'", emits
-no bundle, and uploads no source maps. When the existing code already passes
-`process.env.KEY ?? ''` or `process.env.KEY!`, keep that part as it is.
+The `install` task may still be adding the SDK beside you, so do not build
+here: the build would fail on a package that is about to arrive. The tasks
+after you build the project once every edit is in, and fix what does not
+compile.
 
 ## How you know you succeeded
 
@@ -111,8 +103,6 @@ did or you just created it — keys in the env file and confirmed there with
 `check_env_keys`, never hardcoded. On a platform that does not auto-load
 `.env` and has no loader, your handoff names it as a manual follow-up; on a platform with no environment at all, the
 token is a literal rather than a lookup into something that never defines it.
-In a type-checked project, the value you pass to the SDK is narrowed to a
-`string`.
 Your handoff names the files involved, how the client is constructed, and how
 `.env` reaches it, so the capture-exceptions task can find the init options
 without re-discovering them.

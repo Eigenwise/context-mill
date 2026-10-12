@@ -125,12 +125,25 @@ Then seed the graph:
   subgraph, because both edit the deploy pipeline. It changes production
   deploys only, needs nothing from the user during the run, and leaves local
   development as it is.
+- When you queued the upload subgraph, `verify`, after every other task that
+  edits code: `capture-exceptions`, `configure`, `credentials`, and
+  `link-releases` when you queued it. It builds the project once every edit is
+  in, with the upload credentials in place, and fixes what broke. It does not
+  wait for `wire-ci`: that task edits only CI files, which a local build never
+  reads, so the two run side by side. A project without the upload subgraph
+  has no build of its own to check (Python, Ruby, and PHP apps build only in
+  their deploy), so it gets no `verify`.
 - `report`, after every other queued task except `test-setup`. It writes the
   handoff once the work is done, so it describes what actually shipped.
 - When you queued the upload subgraph, `test-setup` last, after `report` — it
   offers the user an optional local end-to-end test. The report comes first on
-  purpose: a user who walks away still gets it. Queue `report` before
-  `test-setup`, because `test-setup` names `report` as its dependency.
+  purpose: a user who walks away still gets it.
+
+A task can name another as a dependency only once that one is queued and has
+an id. So queue the tail one call per turn, never batched: `verify` when you
+queue it, then `report` naming the `verify` id, then `test-setup` naming the
+`report` id. A `report` queued in the same turn as `verify` cannot wait for it,
+and then reports a build that has not finished.
 
 Never plan an identify, capture, dashboard, or session-replay task — this run
 sets up error tracking, not the full integration. The minimal SDK footprint
@@ -140,6 +153,7 @@ that `install` and `init` leave behind is enough for exceptions to flow.
 
 Every task in the chosen graph is queued with that dependency shape, the four
 upload tasks (when queued) share the same `{ skillId, displayName }` inputs,
+`verify` (when queued) depends on every task that edits code except `wire-ci`,
 `report` depends on every other task except `test-setup` (directly or
 transitively), `test-setup` (when queued) depends on `report`, and the first
 task is runnable. `link-releases` (when queued) carries its own

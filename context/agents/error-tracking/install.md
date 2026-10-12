@@ -19,9 +19,12 @@ your skill — it owns the how: the package manager rules, the version rules,
 what counts as an environment failure, and the fallback.
 
 You only exist in this flow because the user asked for error tracking on a
-repo without PostHog. Install the SDK the errors will report through (the
-server library too, if the app runs server-side code) and stop — no
-instrumentation, no extras.
+repo without PostHog. Install the SDK the init will construct — the browser
+SDK for an app with a browser side, the server SDK for a server-only app — and
+stop: no instrumentation, no extras. A second, server-side library for an app
+that has both is not yours to add. The `capture-exceptions` task adds it when
+it wires server-side capture, so the manifest never carries a library no code
+imports.
 
 ## How you know you succeeded
 

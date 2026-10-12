@@ -57,7 +57,9 @@ project token and host its init looks up. Those live in the same gitignored env
 file, and a compiled binary or a bare interpreter loads nothing on its own.
 
 So open the init point and note the variables it reads. When the project
-already loads the env file for them, you're done. When it doesn't, do not wire
+already loads the env file for them, you're done: never remove an env-file
+flag or loader the project's `start` already has, because that local loading
+is the project's choice. When it doesn't, do not wire
 a loader into the run script: production supplies these as real environment
 variables, and a script that loads the gitignored file breaks wherever it is
 missing. Never put a hard `--env-file=.env` on `start`. Leave the script as it
@@ -70,20 +72,12 @@ Put a multi-step build somewhere the tool actually runs it — a script file, a
 make target, the manifest's own scripts — never an alias mechanism you are
 assuming exists, borrowed from a neighbouring tool.
 
-Match the bundle's module format to the package's type while you write the
-command — you cannot run it, so it has to be right by construction. `esbuild
+Match the bundle's module format to the package's type. A build passes either
+way, and the mismatch only shows when the bundle starts: `esbuild
 --platform=node` emits CommonJS unless you pass `--format=esm`, so in a package
 whose `package.json` sets `"type": "module"` the bundle dies at boot with
 `ReferenceError: module is not defined in ES module scope`. Read the `type`
 field before writing the command.
-
-Types are the same kind of trap. In a config the compiler checks — a `.ts`
-config, or JS under `checkJs` — `process.env.ANYTHING` is `string | undefined`,
-while a plugin's options usually require `string`. Where your skill's example
-asserts or defaults that lookup, keep that part exactly: dropping a `!` or a
-`?? ''` turns a working example into a build that fails type checking. The
-upload step often runs before the type check, so the maps land and the build
-still exits non-zero — a broken build that looks half-successful in the log.
 
 ## The names are a contract
 
@@ -106,11 +100,37 @@ error anywhere — the upload is skipped silently, the build looks clean, and
 every stack trace stays minified.
 
 Do not write any credential values and do not create env files — the
-`credentials` task owns that, in parallel with you. Do not run the build.
+`credentials` task owns that, in parallel with you.
+
+## Build it
+
+Once your edits are in, run the production build and read its exit status, not
+only its log: the upload often runs before the type check, so the maps can
+land in a build that still fails. Fix what your changes broke and build again.
+A failure that was there before your changes is not yours: note it in your
+handoff and leave it. Let the build check option names and types: write from
+your skill, build, and open a plugin's type declarations only to fix an error
+the build reports.
+
+The `credentials` task may not have written the upload credentials yet, so this
+build may run without them. It has to pass either way. A teammate's checkout
+and a pull-request build have no key either, and a config that demands one
+stops their builds. When the build fails only because the upload credentials
+are missing, make the upload skip itself when they are absent, with the option
+your skill's plugin or CLI offers, and build again. Once the credentials are
+written you cannot build without them: the build reads the env file, and a
+prefix such as `VAR= npm run build` is blocked. Check the skip path by reading
+the config instead.
+
+When the credentials are in place, the build creates a release and uploads to
+the user's project. That is expected; it is what every production build will
+do.
 
 ## How you know you succeeded
 
 The build config carries the skill's source-map / debug-symbol changes and can
-read its credentials from the environment at build time. Your handoff names
-every file you changed and the exact build-config keys you added, so the CI
-task can wire the same variables through the pipeline.
+read its credentials from the environment at build time. The production build
+passes with your changes, with or without the upload credentials. Your handoff
+names every file you changed, the exact build-config keys you added, and the
+build command you ran with its result and whether the credentials were
+present, so the CI task can wire the same variables through the pipeline.
