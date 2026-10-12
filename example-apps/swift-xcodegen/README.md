@@ -82,7 +82,7 @@ target's `dependencies:` — never in the pbxproj. See the snippet above.
 ```swift
 import PostHog
 
-let config = PostHogConfig(apiKey: "<your-project-token>", host: "https://us.i.posthog.com")
+let config = PostHogConfig(projectToken: "<your-project-token>", host: "https://us.i.posthog.com")
 config.captureApplicationLifecycleEvents = true
 PostHogSDK.shared.setup(config)
 ```

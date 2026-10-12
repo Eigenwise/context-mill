@@ -28,7 +28,7 @@ The PostHog configuration is stored in `local.properties` (this file is gitignor
 
 ```properties
 # PostHog configuration
-posthog.apiKey=your_posthog_project_token
+posthog.projectToken=your_posthog_project_token
 posthog.host=https://us.i.posthog.com
 ```
 
@@ -89,7 +89,7 @@ class BurritoApplication : Application() {
         super.onCreate()
         
         val posthogConfig = PostHogConfig(
-            apiKey = BuildConfig.POSTHOG_PROJECT_TOKEN,
+            projectToken = BuildConfig.POSTHOG_PROJECT_TOKEN,
             host = BuildConfig.POSTHOG_HOST
         ).apply {
             // Enable session replay
@@ -185,7 +185,7 @@ PostHog automatically captures uncaught exceptions when configured:
 
 ```kotlin
 val posthogConfig = PostHogConfig(
-    apiKey = BuildConfig.POSTHOG_PROJECT_TOKEN,
+    projectToken = BuildConfig.POSTHOG_PROJECT_TOKEN,
     host = BuildConfig.POSTHOG_HOST
 ).apply {
     // Automatic exception capture is enabled by default
@@ -229,7 +229,7 @@ Session replay is enabled in the PostHog configuration:
 
 ```kotlin
 val posthogConfig = PostHogConfig(
-    apiKey = BuildConfig.POSTHOG_PROJECT_TOKEN,
+    projectToken = BuildConfig.POSTHOG_PROJECT_TOKEN,
     host = BuildConfig.POSTHOG_HOST
 ).apply {
     sessionReplay = true
@@ -259,7 +259,7 @@ The instance is available throughout your application after initialization.
 android {
     defaultConfig {
         // PostHog configuration
-        buildConfigField "String", "POSTHOG_PROJECT_TOKEN", "\"${project.findProperty("posthog.apiKey") ?: ""}\""
+        buildConfigField "String", "POSTHOG_PROJECT_TOKEN", "\"${project.findProperty("posthog.projectToken") ?: ""}\""
         buildConfigField "String", "POSTHOG_HOST", "\"${project.findProperty("posthog.host") ?: "https://us.i.posthog.com"}\""
     }
 }
@@ -282,7 +282,7 @@ localProperties.load(new FileInputStream(rootProject.file("local.properties")))
 
 android {
     defaultConfig {
-        buildConfigField "String", "POSTHOG_PROJECT_TOKEN", "\"${localProperties.getProperty("posthog.apiKey", "")}\""
+        buildConfigField "String", "POSTHOG_PROJECT_TOKEN", "\"${localProperties.getProperty("posthog.projectToken", "")}\""
         buildConfigField "String", "POSTHOG_HOST", "\"${localProperties.getProperty("posthog.host", "https://us.i.posthog.com")}\""
     }
 }

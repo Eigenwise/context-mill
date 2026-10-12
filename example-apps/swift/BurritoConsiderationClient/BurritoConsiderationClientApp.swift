@@ -22,7 +22,7 @@ struct BurritoConsiderationClientApp: App {
     @State private var userState = UserState()
 
     init() {
-        let config = PostHogConfig(apiKey: posthogProjectToken, host: posthogHost)
+        let config = PostHogConfig(projectToken: posthogProjectToken, host: posthogHost)
         config.captureApplicationLifecycleEvents = true
         config.debug = true
         PostHogSDK.shared.setup(config)

@@ -50,7 +50,7 @@ android {
         buildConfigField(
             "String",
             "POSTHOG_PROJECT_TOKEN",
-            "\"${localProperties.getProperty("posthog.apiKey", "")}\""
+            "\"${localProperties.getProperty("posthog.projectToken", "")}\""
         )
         buildConfigField(
             "String",
