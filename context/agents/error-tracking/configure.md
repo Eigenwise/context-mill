@@ -34,7 +34,18 @@ Install every dependency with the project's own package manager: call
 translating any `npm install` the skill or docs show (`pnpm add -D …`,
 `yarn add -D …`). In a pnpm or yarn workspace, npm fails outright on
 `workspace:*` dependencies (`EUNSUPPORTEDPROTOCOL`) — that error means the
-wrong manager, never a flag to retry with.
+wrong manager, never a flag to retry with. When `detect_package_manager`
+answers `No lockfile found. Default to npm`, look up the tree first: in a
+workspace package, use the manager whose lockfile sits at the workspace root
+above this directory, and npm only when no parent holds a lockfile.
+
+Change only what the upload needs. Do not remove or weaken a source-map setting
+the project already has (`productionBrowserSourceMaps`, Vite's
+`build.sourcemap`, webpack's `devtool`): a build without the upload credentials
+must still emit what it emitted before. Do not upgrade a package the project
+already depends on to quiet a peer-dependency warning, because a warning is not
+a failure. Upgrade one only when the build fails on it, and keep the project's
+version style: an exact pin stays exact.
 
 When the upload step you wire runs a machine-global `posthog-cli` rather than
 one from the project's own dependencies, do not try to install it or check for

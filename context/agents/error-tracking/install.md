@@ -26,6 +26,20 @@ that has both is not yours to add. The `capture-exceptions` task adds it when
 it wires server-side capture, so the manifest never carries a library no code
 imports.
 
+## Pick the package manager first
+
+Call `detect_package_manager`. When it names a manager, use it. When it answers
+`No lockfile found. Default to npm`, do not run npm yet: this directory may be
+a package inside a workspace, whose lockfile sits at the repository root. Read
+`../package.json` and `../../package.json` up to the root, and look there for a
+lockfile (`pnpm-lock.yaml`, `yarn.lock`, `bun.lock`, `package-lock.json`) or a
+`packageManager` field. Use the manager they name, from this directory. npm is
+right only when no parent holds either: npm in a pnpm or Yarn workspace fails
+on `workspace:*` dependencies (`EUNSUPPORTEDPROTOCOL`) or leaves a second
+lockfile behind.
+
+## Python
+
 In a Python project, install into the virtualenv the project already keeps in
 its directory. When it has none, add the package to the manifest and stop. Do
 not create one: it would stay behind in the user's project.

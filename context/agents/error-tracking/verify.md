@@ -26,7 +26,8 @@ off its command, result, and uploader summary lines as your own, and say you
 reused them. Otherwise:
 
 1. Install with the project's package manager, so the build sees the manifest
-   and lockfile this run left behind.
+   and lockfile this run left behind. In a workspace package, that is the
+   manager whose lockfile sits at the workspace root above this directory.
 2. Run the production build the project defines in this checkout: its package
    manager's build script, or the platform's compiler (Cargo, Go, Gradle,
    Xcode). You cannot run a Dockerfile or a CI job; when that is the only

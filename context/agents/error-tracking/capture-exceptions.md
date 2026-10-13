@@ -26,7 +26,13 @@ and each needs its own capture. Cover every runtime the docs cover for this
 framework and the app actually uses: the server side takes the SDK's server
 library, where the framework hands you its errors (for Next.js,
 `onRequestError` in `instrumentation.ts`). A browser-only setup leaves every
-server error uncaptured. A fully static app has no server runtime to cover.
+server error uncaptured. An Electron app has the same split: its main process
+runs Node, and its uncaught errors never reach the renderer's capture, so the
+main process takes the server library. A packaged app ships without the
+developer's `.env`, so a runtime `process.env` lookup in the main process is
+always empty there: read the token the way the bundler inlines it at build time
+(electron-vite: `import.meta.env.MAIN_VITE_*`). A fully static app has no
+server runtime to cover.
 
 A page often shows two setups side by side: a global initializer, and an
 explicit client you hold. Follow one of them the whole way through. Taking the
@@ -39,10 +45,20 @@ re-check it.
 
 Install nothing except the server library your server-side capture imports,
 when the manifest lacks it: add it with the project's package manager
-(`detect_package_manager`). Do not run tests or start the app, and do not touch
+(`detect_package_manager`). When it answers `No lockfile found. Default to
+npm`, look up the tree first: in a workspace package, use the manager whose
+lockfile sits at the workspace root above this directory, and npm only when no
+parent holds a lockfile. Do not run tests or start the app, and do not touch
 the build config: when the flow includes a configure task, it owns those files.
 Stay inside this project's directory and set up capture in those places; that
 is the whole job.
+
+Each import needs its declaration in the manifest of the package that holds the
+importing file. An app inside a workspace often nests its own package (a
+`v2/package.json` below this directory): when the SDK sits in a different
+manifest than the code that imports it, add it to the importing package too,
+with the workspace's manager. Otherwise the import resolves only through
+hoisting and breaks in a focused install or a container build.
 
 Once your edits are in, run the project's build, or its typecheck when that
 covers your files and is quicker, and fix what your edits broke. A failure

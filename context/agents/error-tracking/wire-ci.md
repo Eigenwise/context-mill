@@ -29,6 +29,18 @@ config that is not there. You cannot create the CI secret that holds the API
 key; reference it by name and carry that follow-up, plus any deploy path you
 could not trace, into your handoff for the report.
 
+A package inside a workspace rarely holds its own pipeline. The CI config and
+deploy files usually sit at the repository root, above this directory
+(`../.github/workflows`, `../../.gitlab-ci.yml`): look there before you
+conclude there is none, and wire the job that builds this package. When you
+cannot open them, name the file and the job in your handoff.
+
+The user merges this change before they create the secrets. A step that fails
+when a PostHog variable is empty (`${VAR:?…}`, an `exit 1`, a required input)
+breaks every deploy until they do. Pass the variables through and let the
+upload skip itself when they are empty, as the build config already does, and
+name the secrets in your handoff instead of enforcing them.
+
 ## Two things cross the boundary, not one
 
 Credentials are half of it. The uploader also needs a **release identity** — a
