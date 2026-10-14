@@ -62,7 +62,10 @@ and pick at most one, by this precedence (first match wins):
   `nuxt` → `nuxt`; `next` → `nextjs`;
   `@angular/core` → `angular`; `vite` → `vite`; `webpack` → `webpack`;
   `rollup` → `rollup`; `react` → `react`; server-only Node → `node`;
-  any other browser JS → `web`
+  any other browser JS → `web`. Server-only Node is `node` only when a
+  build compiles or bundles it (a `build` script running `tsc`, esbuild, or
+  another bundler), in this directory or in a package nested below it.
+  Server JavaScript that no build touches runs as written: **none**.
 - **none** for platforms whose stack traces are already readable: plain
   Python (Django, Flask, FastAPI), Ruby, PHP, Elixir, JVM servers, .NET.
   Skip the whole upload subgraph for them — a skipped upload on such a
@@ -102,9 +105,9 @@ anything. "PostHog is already integrated" answers fact 1 only; it never decides
 fact 2 or fact 3, and an already-integrated project still gets the upload
 subgraph or `link-releases` when a variant matches. A compiled or bundled JS
 project normally has an uploader variant: a Node service built with `tsc` ships
-minified/compiled output, so it is the `node` variant, not "none". Only two
+minified/compiled output, so it is the `node` variant, not "none". Only three
 kinds of project skip the upload subgraph — the readable-stack platforms listed
-above, and Astro.
+above, Astro, and server JavaScript that no build compiles or bundles.
 
 Then seed the graph:
 

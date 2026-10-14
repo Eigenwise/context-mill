@@ -96,9 +96,12 @@ global handler fires. Express error middleware, Fastify `setErrorHandler`, Hono
 `onError`, Vue `app.config.errorHandler`, Angular `ErrorHandler`, SvelteKit
 `handleError`, a React error boundary, Next.js `global-error` — hook those,
 because the framework swallows the error and the global listener never hears
-of it. A platform with no autocapture at all, such as Go, is the other case:
-there the capture boundary at the entry point is the mechanism, not a copy of
-one.
+of it. NestJS is one more layer up: its exception filters answer every request
+error before Express error middleware runs, so capture goes in a global filter
+(the app's existing `@Catch()` filter when it has one), not in
+`setupExpressErrorHandler`. A platform with no autocapture at all, such as Go,
+is the other case: there the capture boundary at the entry point is the
+mechanism, not a copy of one.
 
 ## How you know you succeeded
 

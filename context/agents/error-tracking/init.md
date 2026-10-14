@@ -28,6 +28,16 @@ whose PostHog init is missing or unproven. Initialize the SDK so exceptions can
 flow and stop — no instrumentation, no extras. Don't set up exception capture
 either way; the capture-exceptions task after you owns that.
 
+## Initialize the server the project ships
+
+A directory can hold more than one server: a workspace often keeps a small
+script beside a nested package with its own manifest (`index.js` next to
+`v2/package.json`). Initialize each server the project builds or deploys, the
+one with a `build` or `start` script, a Dockerfile, or a job in the pipeline. A
+script the project only runs in development, with nothing but a `dev` script,
+gets no client. Name the server and its entry file in your handoff, so the
+tasks after you cover the same one.
+
 ## An existing init still needs its variable defined
 
 "Already initialised" is a property of the pair, not of the call. An init point

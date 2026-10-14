@@ -74,6 +74,13 @@ build history, and the builder itself will warn you: *do not use ARG or ENV
 instructions for sensitive data*. Widening the git-variable pattern to cover the
 key is a downgrade, not consistency.
 
+A build cache between the pipeline and the build, such as Turborepo's, is one
+more boundary. List the upload credentials among the task's hashed inputs
+(Turborepo's `env`), so a build that has them never replays an entry made
+without them, and pass the git variables through without hashing them
+(`passThroughEnv`). Leave the cache on: a hit restores output whose chunks are
+already uploaded.
+
 ## The runtime boundary has names too
 
 Upload credentials are a build-time concern. The app also reads its own

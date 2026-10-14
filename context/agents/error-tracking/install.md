@@ -15,8 +15,9 @@ dependsOn: []
 
 Make sure the PostHog SDK is in the manifest. If it's already installed,
 leave it alone and say so in your handoff. If it isn't, install it following
-your skill — it owns the how: the package manager rules, the version rules,
-what counts as an environment failure, and the fallback.
+your skill — it owns the version rules, what counts as an environment failure,
+and the fallback. The package manager comes from the section below, which wins
+over your skill's own rule: the skill looks at this directory only.
 
 You only exist in this flow because the user asked for error tracking on a
 repo without PostHog. Install the SDK the init will construct — the browser
@@ -33,10 +34,11 @@ Call `detect_package_manager`. When it names a manager, use it. When it answers
 a package inside a workspace, whose lockfile sits at the repository root. Read
 `../package.json` and `../../package.json` up to the root, and look there for a
 lockfile (`pnpm-lock.yaml`, `yarn.lock`, `bun.lock`, `package-lock.json`) or a
-`packageManager` field. Use the manager they name, from this directory. npm is
-right only when no parent holds either: npm in a pnpm or Yarn workspace fails
-on `workspace:*` dependencies (`EUNSUPPORTEDPROTOCOL`) or leaves a second
-lockfile behind.
+`packageManager` field. Reading them is part of this task even though they sit
+above this directory; edit nothing there. Use the manager they name, from this
+directory. npm is right only when no parent holds either: npm in a pnpm or Yarn
+workspace fails on `workspace:*` dependencies (`EUNSUPPORTEDPROTOCOL`) or
+leaves a second lockfile behind.
 
 ## Python
 

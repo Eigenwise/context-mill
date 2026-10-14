@@ -47,6 +47,12 @@ already depends on to quiet a peer-dependency warning, because a warning is not
 a failure. Upgrade one only when the install or the build fails on it, and keep
 the project's version style: an exact pin stays exact.
 
+Wire the upload into a build the project already has, in this directory or in
+a package nested below it. Code that no build compiles or bundles runs as
+written, and its stack traces are already readable: do not add a bundler, a
+compiler, or a new `build` or `start` script to create one. When no package
+here has a build, report this task as `not needed` and say why in your handoff.
+
 When the upload step you wire runs a machine-global `posthog-cli` rather than
 one from the project's own dependencies, do not try to install it or check for
 it: a global install, `posthog-cli` itself, and `command -v` are blocked for
