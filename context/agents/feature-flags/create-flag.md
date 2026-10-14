@@ -31,6 +31,8 @@ For each flag you need:
    above, a boolean flag with one release condition at 0% rollout, and
    `active: false`. New flags are active by default, so pass
    `active: false` explicitly. The user turns it on when they are ready.
+4. Create rejected because the key already exists: another run created it
+   after your lookup. Look it up by key once more and reuse it as in step 2.
 
 Run `info` on each tool before calling it; never guess the input shape.
 
