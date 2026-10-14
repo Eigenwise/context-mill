@@ -44,8 +44,8 @@ the project already has (`productionBrowserSourceMaps`, Vite's
 `build.sourcemap`, webpack's `devtool`): a build without the upload credentials
 must still emit what it emitted before. Do not upgrade a package the project
 already depends on to quiet a peer-dependency warning, because a warning is not
-a failure. Upgrade one only when the build fails on it, and keep the project's
-version style: an exact pin stays exact.
+a failure. Upgrade one only when the install or the build fails on it, and keep
+the project's version style: an exact pin stays exact.
 
 When the upload step you wire runs a machine-global `posthog-cli` rather than
 one from the project's own dependencies, do not try to install it or check for

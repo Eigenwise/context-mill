@@ -38,8 +38,9 @@ cannot open them, name the file and the job in your handoff.
 The user merges this change before they create the secrets. A step that fails
 when a PostHog variable is empty (`${VAR:?…}`, an `exit 1`, a required input)
 breaks every deploy until they do. Pass the variables through and let the
-upload skip itself when they are empty, as the build config already does, and
-name the secrets in your handoff instead of enforcing them.
+upload skip itself when they are empty: the build config's gate does that, and a
+`posthog-cli` step in the pipeline needs a condition on the key. Name the
+secrets in your handoff instead of enforcing them.
 
 ## Two things cross the boundary, not one
 
