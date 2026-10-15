@@ -134,6 +134,34 @@ function createLLMProvider() {
   };
 }
 
+const TRIAGE_CONCURRENCY = 8;
+
+// One file per call: triage of a combined string sees only its first files' text.
+async function triageEachFile(allMatches, llmProvider) {
+  const matchIndicesByFile = new Map();
+  allMatches.forEach(({ label }, matchIndex) => {
+    matchIndicesByFile.set(label, [...(matchIndicesByFile.get(label) ?? []), matchIndex]);
+  });
+
+  const triaged = new Array(allMatches.length);
+  const filesToTriage = [...matchIndicesByFile.values()];
+  async function triageRemainingFiles() {
+    while (filesToTriage.length > 0) {
+      const matchIndices = filesToTriage.shift();
+      const fileResults = await triageMatches(
+        allMatches[matchIndices[0]].content,
+        matchIndices.map((matchIndex) => allMatches[matchIndex].match),
+        llmProvider,
+      );
+      matchIndices.forEach((matchIndex, j) => {
+        triaged[matchIndex] = fileResults[j];
+      });
+    }
+  }
+  await Promise.all(Array.from({ length: TRIAGE_CONCURRENCY }, triageRemainingFiles));
+  return triaged;
+}
+
 // -- Colors (disabled in CI where annotations do the work) --
 
 const color = isCI
@@ -370,30 +398,16 @@ async function main() {
     `YARA scan complete: ${allMatches.length} match(es) across ${filesToScan.length} file(s).\n`,
   );
 
-  // Step 2: Triage ALL matches in one LLM call
+  // Step 2: Triage each file's matches against that file's own content
   let threats = 0;
   let warnings = 0;
   let triagedMatches = [];
 
   if (allMatches.length > 0) {
-    const rawMatches = allMatches.map((m) => m.match);
-
-    // Build combined content for the LLM (one section per unique file, full text).
-    // Warlock's triageMatches handles content truncation and match batching internally.
-    const uniqueFiles = new Map();
-    for (const { label, content } of allMatches) {
-      if (!uniqueFiles.has(label)) {
-        uniqueFiles.set(label, content);
-      }
-    }
-    const combinedContent = [...uniqueFiles.entries()]
-      .map(([label, content]) => `--- ${label} ---\n${content}`)
-      .join("\n\n");
-
     triagedMatches = llmProvider
-      ? await triageMatches(combinedContent, rawMatches, llmProvider)
-      : rawMatches.map((m) => ({
-          ...m,
+      ? await triageEachFile(allMatches, llmProvider)
+      : allMatches.map(({ match }) => ({
+          ...match,
           triage: {
             verdict: "true_positive",
             reason: "No LLM triage available.",
