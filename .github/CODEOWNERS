@@ -7,6 +7,8 @@
 *                                                       @PostHog/team-wizard-docs
 
 # Skill trees owned by product teams.
+/context/skills/error-tracking/                         @PostHog/team-error-tracking
+/context/agents/error-tracking/                         @PostHog/team-error-tracking
 /context/skills/error-tracking-upload-source-maps/      @PostHog/team-error-tracking
 /context/skills/error-tracking-link-releases/           @PostHog/team-error-tracking
 /context/skills/self-driving/                           @PostHog/team-self-driving
@@ -23,5 +25,6 @@
 /context/skills/audit*/                                 @PostHog/team-fde
 /context/skills/events-audit/                           @PostHog/team-fde
 /context/skills/replay-vision*/                         @PostHog/team-replay
+/context/agents/replay-vision/                          @PostHog/team-replay
 /context/skills/ai-observability/                       @PostHog/team-ai-observability
 /context/skills/llm-analytics/                          @PostHog/team-ai-observability

@@ -10,9 +10,10 @@ Every skill ships with a `config.yaml`. An optional `cli:` block on that
 config tells the PostHog wizard whether and how this skill appears as a
 command. The block is parsed in `scripts/lib/skill-generator.js` and
 emitted as `cliEntries` inside `dist/skills/skill-menu.json`. The wizard
-fetches `skill-menu.json` at runtime and registers each entry as a
-command, so adding a new skill-backed command is a context-mill release
-— no wizard release needed.
+fetches `skill-menu.json` at runtime and registers each entry under its
+family, so adding a subcommand to an existing family is a context-mill
+release, with no wizard release. A new top-level command also needs a
+wizard PR, see [Adding a new command](#adding-a-new-command).
 
 ### The `cli:` block schema
 
@@ -206,12 +207,14 @@ When you've decided your skill meets the `role: command` criterion:
    family), and `command`.
 2. Confirm `npm run build` emits the entry under `cliEntries` inside
    `dist/skills/skill-menu.json` with the right `parentCommand` /
-   `command` values. The wizard picks it up on its next invocation
-   (no wizard release needed).
-3. No wizard PR is needed for skill-backed public commands. If you also
-   need wizard-side hooks (custom outro, content blocks, abort cases),
-   that's a wizard PR — but the CLI registration is handled by the
-   manifest.
+   `command` values. A subcommand under an existing family, like
+   `audit` or `migrate`, reaches users on their next wizard run, with no
+   wizard release.
+3. A new top-level command also needs a wizard PR. The wizard registers each
+   top-level command in
+   [`src/cli/commands/`](https://github.com/PostHog/wizard/tree/main/src/cli/commands).
+   Ship the context mill PR first. Wizard-side hooks (custom outro, content
+   blocks, abort cases) are a wizard PR too.
 
 ## What goes here vs. in the wizard repo
 
@@ -223,7 +226,7 @@ When you've decided your skill meets the `role: command` criterion:
 | YARA-X security rules | `warlock` |
 | Wizard runner pipeline, TUI, agent runtime | `wizard` |
 | Wizard-native programs (doctor, mcp, source-maps) | `wizard` |
-| Wizard CLI factories and bin.ts wiring | `wizard` |
+| Wizard CLI commands and factories (`src/cli/commands/`) | `wizard` |
 
 If a change crosses two repos, ship the context-mill PR first so the
 manifest is published before the wizard tries to consume it.
@@ -234,8 +237,8 @@ manifest is published before the wizard tries to consume it.
   (`parseCliBlock`, `expandSkillGroups`, JSDoc typedef for the `cli:` block)
 - CLI entries emit: `scripts/lib/build-phases.js` (`generateCliEntries`)
 - Tests for the cli block parser: `scripts/lib/tests/cli-block.test.js`
-- The wizard's side of the contract: [PostHog/wizard CONTRIBUTING.md](https://github.com/PostHog/wizard/blob/main/CONTRIBUTING.md)
+- The wizard's side of the contract: [PostHog/wizard AGENTS.md](https://github.com/PostHog/wizard/blob/main/AGENTS.md)
 
 Questions: drop a note in
-[#team-docs-and-wizard](https://posthog.slack.com/archives/C09GTQY5RLZ) or
+[#team-wizard-and-docs](https://posthog.slack.com/archives/C09GTQY5RLZ) or
 open an issue.
