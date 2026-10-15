@@ -2,3 +2,5 @@ onlyBuiltDependencies:
   - esbuild
 allowBuilds:
   esbuild: true
+minimumReleaseAgeExclude:
+  - '@posthog/warlock@0.2.5'
