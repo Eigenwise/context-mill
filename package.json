@@ -28,7 +28,7 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.95.0",
-    "@posthog/warlock": "^0.2.2",
+    "@posthog/warlock": "^0.2.5",
     "gray-matter": "^4.0.3",
     "js-yaml": "^4.1.1"
   }
