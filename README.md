@@ -172,8 +172,8 @@ build; the team-owned skills below route review to their owning team instead.
 | `context/skills/revenue-analytics/`, `context/skills/web-analytics/` | `@PostHog/team-web-analytics` |
 | `context/skills/data-warehouse-source/` | `@PostHog/team-warehouse-sources` |
 | `context/skills/self-driving/` | `@PostHog/team-self-driving` |
-| `context/skills/mcp-analytics/` | `@PostHog/team-mcp-analytics` |
-| `context/skills/metrics/`, `context/agents/metrics/` | `@PostHog/apm` |
+| `context/skills/mcp-analytics/` | `@PostHog/mcp-analytics` |
+| `context/skills/metrics/`, `context/agents/metrics/` | `@PostHog/team-apm` |
 | `context/skills/replay-vision*/`, `context/agents/replay-vision/` | `@PostHog/team-replay` |
 | `context/skills/ai-observability/`, `context/skills/llm-analytics/` | `@PostHog/team-ai-observability` |
 
