@@ -14,8 +14,8 @@ import fs from "node:fs";
 import path from "node:path";
 import { execFileSync } from "node:child_process";
 import os from "node:os";
-import { scan, triageMatchesByDecision } from "@posthog/warlock";
-import { createDecisionProvider, DECISION_MODEL } from "./lib/decision-provider.js";
+import { scan, triageMatches } from "@posthog/warlock";
+import { createTriageClassifier, TRIAGE_MODEL_ID } from "./lib/triage-classifier.js";
 
 // Text-based formats we feed to Warlock. Binary/unknown types are skipped on
 // purpose, since Warlock scans text content and non-text files add nothing.
@@ -102,11 +102,11 @@ function readGatewayToken() {
   }
 }
 
-function createTriageProvider() {
+function createClassifier() {
   const token = readGatewayToken();
   if (!token) return null;
-  return createDecisionProvider({
-    baseURL: process.env.WARLOCK_GATEWAY_URL || getGatewayUrl(),
+  return createTriageClassifier({
+    gatewayURL: process.env.WARLOCK_GATEWAY_URL || getGatewayUrl(),
     token,
   });
 }
@@ -116,7 +116,7 @@ function createTriageProvider() {
 const TRIAGE_CONCURRENCY = 2;
 
 // One file per call: triage of a combined string sees only its first files' text.
-async function triageEachFile(allMatches, decide) {
+async function triageEachFile(allMatches, classify) {
   const matchIndicesByFile = new Map();
   allMatches.forEach(({ label }, matchIndex) => {
     matchIndicesByFile.set(label, [...(matchIndicesByFile.get(label) ?? []), matchIndex]);
@@ -127,10 +127,10 @@ async function triageEachFile(allMatches, decide) {
   async function triageRemainingFiles() {
     while (filesToTriage.length > 0) {
       const matchIndices = filesToTriage.shift();
-      const fileResults = await triageMatchesByDecision(
+      const fileResults = await triageMatches(
         allMatches[matchIndices[0]].content,
         matchIndices.map((matchIndex) => allMatches[matchIndex].match),
-        decide,
+        classify,
       );
       matchIndices.forEach((matchIndex, j) => {
         triaged[matchIndex] = fileResults[j];
@@ -254,7 +254,7 @@ async function trackScanResult({ filesScanned, yaraMatches, threats, falsePositi
     false_positives: falsePositives,
     result,
     llm_triage_enabled: llmTriageEnabled,
-    triage_model: llmTriageEnabled ? DECISION_MODEL : "",
+    triage_model: llmTriageEnabled ? TRIAGE_MODEL_ID : "",
     duration_ms: durationMs,
     rules_triggered: rulesTriggered,
     rules_by_verdict: rulesByVerdict,
@@ -284,10 +284,10 @@ async function trackScanResult({ filesScanned, yaraMatches, threats, falsePositi
 
 async function main() {
   const startTime = Date.now();
-  const decide = createTriageProvider();
+  const classify = createClassifier();
 
-  if (decide) {
-    console.log(`Triage enabled (${DECISION_MODEL} on the PostHog gateway).\n`);
+  if (classify) {
+    console.log(`Triage enabled (${TRIAGE_MODEL_ID} on the PostHog gateway).\n`);
   } else {
     console.log(
       "Triage disabled (no gateway token configured). All matches will be treated as threats.\n",
@@ -384,8 +384,8 @@ async function main() {
   let triagedMatches = [];
 
   if (allMatches.length > 0) {
-    triagedMatches = decide
-      ? await triageEachFile(allMatches, decide)
+    triagedMatches = classify
+      ? await triageEachFile(allMatches, classify)
       : allMatches.map(({ match }) => ({
           ...match,
           triage: {
@@ -420,7 +420,7 @@ async function main() {
     threats,
     falsePositives: warnings,
     result,
-    llmTriageEnabled: Boolean(decide),
+    llmTriageEnabled: Boolean(classify),
     durationMs,
     triaged: triagedMatches,
   });
