@@ -60,7 +60,7 @@ lands. See [CONTRIBUTING.md § Flat vs. family](CONTRIBUTING.md#flat-vs-family--
 1. Read [CONTRIBUTING.md § Promotion criterion for `role: command`](CONTRIBUTING.md#promotion-criterion-for-role-command).
 2. Run `npm test` — the parser's suite (`scripts/lib/tests/cli-block.test.js`) covers every naming-convention case.
 3. Run `npm run build` — confirm the entry appears (or disappears) under `cliEntries` in `dist/skills/skill-menu.json` with the values you expect.
-4. The wizard resolves new entries at runtime, so no wizard release is required unless the change needs wizard-side hooks (custom outro, content blocks, abort cases).
+4. The wizard resolves new entries under an existing family at runtime, so no wizard release is required. A new top-level command, or wizard-side hooks (custom outro, content blocks, abort cases), need a wizard PR.
 
 ## Wizard CLI command mapping (old → new)
 
@@ -115,9 +115,9 @@ npm run dev        # Partial-rebuild dev server with watch
 
 - Skill content lives in markdown, never in JS/TS. The build pipeline reads YAML configs and stitches markdown together; it doesn't generate prose.
 - The `cli:` block is the **single source of truth** for the wizard's command surface for any skill. Don't duplicate command names in the wizard repo; they're derived from the manifest.
-- `additionalProperties: false` is set on the JSON Schema — adding a new field to the manifest shape is a coordinated change (bump the schema, bump consumer types in the wizard). See [PostHog/wizard CONTRIBUTING.md](https://github.com/PostHog/wizard/blob/main/CONTRIBUTING.md) for the wizard-side contract.
+- `additionalProperties: false` is set on the JSON Schema — adding a new field to the manifest shape is a coordinated change (bump the schema, bump consumer types in the wizard). See [PostHog/wizard AGENTS.md](https://github.com/PostHog/wizard/blob/main/AGENTS.md) for the wizard-side contract.
 
 ## Companion projects
 
-- **[wizard](https://github.com/PostHog/wizard)** — the CLI that consumes the manifest at build time and turns each `role: command` entry into a registered command.
+- **[wizard](https://github.com/PostHog/wizard)** — the CLI that reads `skill-menu.json` from the latest release at run time and turns each `role: command` entry into a command.
 - **[warlock](https://github.com/PostHog/warlock)** — the security scanner used by the wizard. Unrelated to skill content but lives alongside in the same engineering scope.

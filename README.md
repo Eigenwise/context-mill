@@ -2,29 +2,31 @@
 
 This repo assembles PostHog context for AI agents and LLMs into [Agent Skills](https://agentskills.io/specification)-compliant packages. Check out `/context` for details. 
 
-**Need output in a different format?** No problem. Let us know in [#team-docs-and-wizard](https://posthog.slack.com/archives/C09GTQY5RLZ), or fire up a PR to augment the `/context` and `/scripts` directories with your preferred transformation.
+**Need output in a different format?** No problem. Let us know in [#team-wizard-and-docs](https://posthog.slack.com/archives/C09GTQY5RLZ), or fire up a PR to augment the `/context` and `/scripts` directories with your preferred transformation.
 
 **Have a skill you want to make sure is maintained and distributed via the wizard?** 
 
 We'd love your pull request!
 
-The context mill gathers up-to-date content from multiple sources, packaging PostHog developer docs, prompts, and working example code into a versioned manifest which can be shipped anywhere as a zip file. 
+The context mill gathers up-to-date content from multiple sources, packaging PostHog developer docs, prompts, and working example code into versioned skills which can be shipped anywhere as zip files. 
 
-The [PostHog MCP server](https://github.com/PostHog/posthog/tree/master/services/mcp) currently fetches the examples repo manifest and exposes it to any MCP-compatible client as resources and slash commands. This is what currently powers the PostHog [wizard](https://github.com/PostHog/wizard). 
+The PostHog [wizard](https://github.com/PostHog/wizard) downloads skills and menus from the latest release. The [PostHog MCP server](https://github.com/PostHog/posthog/tree/master/services/mcp) fetches the `skills-mcp-resources.zip` bundle and exposes it to any MCP-compatible client as resources. The [AI plugin](https://github.com/PostHog/ai-plugin) packages skills from here too.
+
+The context mill is a stopgap. The goal is to retire it once the docs themselves package cleanly into skills. See the [handbook](https://posthog.com/handbook/wizard-and-docs/context-mill).
 
 ## Context engine 
 
 ![context engine diagram](https://res.cloudinary.com/dmukukwp6/image/upload/q_auto,f_auto/context_engine_29f6d6ddc0.png)
 
-The examples repo effectively acts as a context engine, an assembly line for turning disparate PostHog knowledge into something portable, something AI systems can reliably consume. 
+The context mill effectively acts as a context engine, an assembly line for turning disparate PostHog knowledge into something portable, something AI systems can reliably consume. 
 
 You can break its context engineering flow into three main stages.
 
-**1. Context sourcing**: The examples repo pulls from the entire PostHog developer docs, with pages delivered from posthog.com as raw Markdown. It also includes curated, hand-crafted prompts and working example apps.
+**1. Context sourcing**: The context mill pulls from the entire PostHog developer docs, with pages delivered from posthog.com as raw Markdown. It also includes curated, hand-crafted prompts and working example apps.
 
-**2. Context assembly**: The examples repo transforms and packages the sourced context into a zip file manifest, which is meant to be portable and self-contained. We can structure and shape the manifest however we need.
+**2. Context assembly**: The context mill transforms and packages the sourced context into zip files and menus, which is meant to be portable and self-contained. We can structure and shape them however we need.
 
-**3. Context delivery**: The examples repo creates a versioned release for the manifest, which can be consumed by any agent or MCP server as a skill or resource.
+**3. Context delivery**: The context mill creates a versioned GitHub release, mirrored to `context-mill.posthog.com`, which any agent or MCP server can consume as skills or resources.
 
 ## Example apps
 
@@ -87,12 +89,15 @@ Run `npm run build` to generate the release artifacts:
 | Output | Description |
 |--------|-------------|
 | `dist/skills/<id>.zip` | Per-skill bundles (SKILL.md + references + shared docs) |
-| `dist/skills/manifest.json` | Versioned manifest of every bundled skill and its download URL |
+| `dist/skills/manifest.json` | Versioned manifest of every bundled skill and its download URL. It ships inside `skills-mcp-resources.zip`, not as its own release asset |
 | `dist/skills/skill-menu.json` | Category groupings and `cliEntries` — the wizard's command lookup table |
+| `dist/agents/agent-menu.json` | Orchestrator flows and the task prompts in each one |
+| `dist/skills-mcp-resources.zip` | One bundle of `manifest.json` and every skill ZIP, for the MCP server |
 
-Releases are cut as GitHub releases. Consumers (the wizard, the MCP server,
-anything else) fetch `manifest.json` / `skill-menu.json` from the latest
-release and download the per-skill ZIPs on demand.
+Releases are cut as GitHub releases and mirrored to `context-mill.posthog.com`.
+The wizard fetches `skill-menu.json` and `agent-menu.json` from the latest
+release and downloads the per-skill ZIPs on demand. The MCP server fetches
+`skills-mcp-resources.zip`.
 
 ### Manifest structure
 
@@ -153,28 +158,30 @@ surface. If you (or your agent) knew an older command, here's where it went:
 ## Context mill skill owners
 
 Reviews are auto-requested via [`.github/CODEOWNERS`](.github/CODEOWNERS) — the
-file is the source of truth; this table just mirrors it for readability.
-`team-wizard-docs` is the default reviewer; the team-owned skills below route
-review to their owning team instead.
+file is the source of truth; this table just mirrors it for readability. The
+[handbook](https://posthog.com/handbook/wizard-and-docs/context-mill#who-owns-which-skill)
+explains who owns what. `team-wizard-docs` is the default reviewer and owns the
+build; the team-owned skills below route review to their owning team instead.
 
 | Path | Owning team |
 |---|---|
 | `*` (everything else, including all other skills) | `@PostHog/team-wizard-docs` |
-| `context/skills/integration/` | `@PostHog/team-wizard-docs` |
-| `context/skills/error-tracking-upload-source-maps/` | `@PostHog/team-error-tracking` |
-| `context/skills/error-tracking-link-releases/` | `@PostHog/team-error-tracking` |
-| `context/skills/mcp-analytics/` | `@PostHog/team-mcp-analytics` |
-| `context/skills/revenue-analytics/` | `@PostHog/team-web-analytics` |
-| `context/skills/self-driving/` | `@PostHog/team-self-driving` |
+| `context/skills/integration/`, `context/skills/integration-v2/`, `context/agents/integration-v2/` | `@PostHog/team-growth` |
+| `context/skills/migrate/`, `context/skills/audit*/`, `context/skills/events-audit/` | `@PostHog/team-fde` |
+| `context/skills/error-tracking/`, `context/agents/error-tracking/`, `context/skills/error-tracking-upload-source-maps/`, `context/skills/error-tracking-link-releases/` | `@PostHog/team-error-tracking` |
+| `context/skills/revenue-analytics/`, `context/skills/web-analytics/` | `@PostHog/team-web-analytics` |
 | `context/skills/data-warehouse-source/` | `@PostHog/team-warehouse-sources` |
-| `context/skills/web-analytics/` | `@PostHog/team-web-analytics` |
+| `context/skills/self-driving/` | `@PostHog/team-self-driving` |
+| `context/skills/mcp-analytics/` | `@PostHog/mcp-analytics` |
+| `context/skills/metrics/`, `context/agents/metrics/` | `@PostHog/team-apm` |
+| `context/skills/replay-vision*/`, `context/agents/replay-vision/` | `@PostHog/team-replay` |
+| `context/skills/ai-observability/`, `context/skills/llm-analytics/` | `@PostHog/team-ai-observability` |
 
-Ownership is by directory. Skills not listed above (`audit`, `audit-*`,
-`cost-cutting`, `creating-product-tours`, `error-tracking`, `events-audit`,
-`feature-flags`, `llm-analytics`, `logs`, `migrate`, `omnibus`,
-`posthog-best-practices`, `quack`, `tools-and-features`) fall through the
-default and are owned by `team-wizard-docs`. Today CODEOWNERS only
-auto-requests review — approval is not a merge gate.
+Ownership is by directory. Skills not listed above (`creating-product-tours`,
+`feature-flags`, `logs`, `omnibus`, `posthog-best-practices`, `quack`,
+`tools-and-features`, `tracing`) fall through the default and are owned by
+`team-wizard-docs`. Today CODEOWNERS only auto-requests review — approval is
+not a merge gate.
 
 ## Security scanning
 
