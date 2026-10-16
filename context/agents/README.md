@@ -1,7 +1,7 @@
 # Agent prompts
 
 > **Frozen.** The wizard bundles its agent prompts in its own repo, at
-> `src/programs/<id>/agents/`; make prompt changes there. This copy is
+> `src/programs/<id>/agent/`; make prompt changes there. This copy is
 > published only for wizard versions already in the field, and CI
 > (`scripts/check-agents-frozen.sh`) rejects pull requests that change it.
 

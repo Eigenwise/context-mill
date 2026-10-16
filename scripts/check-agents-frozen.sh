@@ -12,7 +12,7 @@ BASE_REF="${1:-origin/main}"
 CHANGED=$(git diff --name-only "${BASE_REF}...HEAD" -- context/agents | grep -v '^context/agents/README\.md$' || true)
 
 if [ -n "$CHANGED" ]; then
-  echo "::error::Agent prompts in context/agents/ are frozen. They now live in the wizard repo at src/programs/<id>/agents/ — make the change there."
+  echo "::error::Agent prompts in context/agents/ are frozen. They now live in the wizard repo at src/programs/<id>/agent/ — make the change there."
   echo "Changed files:"
   echo "$CHANGED" | sed 's/^/  - /'
   exit 1
