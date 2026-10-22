@@ -160,13 +160,8 @@ If the project uses Django:
   context identified as whoever they were beforehand, which is nobody on a login.
   There, open a fresh context and identify it after the auth state changes, or the
   event is attributed to the wrong person.
-- Create the `Posthog()` client in `settings.py` from env vars and assign it to
-  `POSTHOG_MW_CLIENT`. The middleware and the Django REST Framework exception
-  handler send exceptions to that client. Without it, they use the unconfigured
-  global client, and view exceptions never reach PostHog.
-- With Django REST Framework, set `REST_FRAMEWORK["EXCEPTION_HANDLER"]` to
-  `posthog.integrations.drf.exception_handler`. DRF turns API exceptions into
-  responses before the middleware sees them.
+- Pass the `Posthog()` client to the middleware with `POSTHOG_MW_CLIENT`, as the
+  Django docs show.
 - Do not write custom middleware or `distinct_id` helpers first.
 - For management commands or other short-lived processes, call the underlying Python client's `posthog.shutdown()` before exit.
 - If this applies, consult [the Django docs](https://posthog.com/docs/libraries/django).
@@ -175,13 +170,10 @@ If the project uses Django:
 
 If the project uses Flask:
 
-- Create one `Posthog()` client in `create_app()` before blueprint registration,
-  and register `PosthogFlaskIntegration(app, client=posthog_client)`. It opens a
-  context for each request and captures exceptions that escape your routes.
-- The integration does not identify the user: call `identify_context(...)` in
-  the route, preferring the authenticated user id.
-- An error handler consumes its exceptions before the integration sees them.
-  Call `capture_exception(e)` only inside error handlers the app already has.
+- Initialize PostHog in `create_app()` before blueprint registration, and
+  register `PosthogFlaskIntegration`, as the Flask docs show. It opens a context
+  for each request and captures route exceptions. Identify the user with
+  `identify_context(...)` in the route.
 - For CLI commands, jobs, or other short-lived processes, call the underlying Python client's `posthog.shutdown()` before exit.
 - If this applies, consult [the Flask docs](https://posthog.com/docs/libraries/flask).
 
@@ -189,15 +181,10 @@ If the project uses Flask:
 
 If the project uses FastAPI:
 
-- Create one `Posthog()` client where you build the app, add
-  `app.add_middleware(PosthogASGIMiddleware, client=posthog_client)`, and call
-  `posthog_client.shutdown()` in lifespan shutdown. The middleware opens a
-  context for each request and captures exceptions that escape your routes.
-- The middleware does not identify the user: call `identify_context(...)` in a
-  dependency or the route, rather than at each capture.
-- An `@app.exception_handler(Exception)` catch-all still lets the middleware
-  capture the exception. A handler for a specific exception class does not:
-  call `capture_exception(exc)` there.
+- Add `PosthogASGIMiddleware`, as the Python docs show, and call
+  `posthog.shutdown()` in lifespan shutdown. The middleware opens a context for
+  each request and captures route exceptions. Identify the user in a dependency
+  rather than at each capture.
 - Prefer Pydantic Settings with `@lru_cache`.
 - Use `Depends` for current user and settings in handlers.
 - If this applies, consult [the Python docs](https://posthog.com/docs/libraries/python).
