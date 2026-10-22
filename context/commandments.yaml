@@ -73,6 +73,7 @@ commandments:
     - 'In CLIs and scripts: MUST call posthog.shutdown() before exit or all events are lost'
     - Always use the Posthog() class constructor (instance-based API) instead of module-level posthog.api_key config
     - Always include enable_exception_autocapture=True in the Posthog() constructor to automatically track exceptions
+    - PosthogFlaskIntegration (posthog.integrations.flask), PosthogASGIMiddleware (posthog.integrations.asgi), and the Django REST Framework exception handler (posthog.integrations.drf) need posthog 7.69.0 or later - when you add one, require at least that version
     - NEVER send PII in capture() event properties — no emails, full names, phone numbers, physical addresses, IP addresses, or user-generated content
     - PII belongs in identify() person properties, NOT in capture() event properties. Safe event properties are metadata like message_length, form_type, boolean flags.
     - Register posthog_client.shutdown with atexit.register() to ensure all events are flushed on exit
@@ -141,19 +142,20 @@ commandments:
 
   django:
     - Add 'posthog.integrations.django.PosthogContextMiddleware' to MIDDLEWARE, after AuthenticationMiddleware, it auto-extracts tracing headers and captures exceptions
-    - Initialize PostHog in AppConfig.ready() with api_key and host from environment variables
+    - Pass the Posthog() client to the middleware with the POSTHOG_MW_CLIENT setting, as the Django docs show - do not assign django.conf.settings at runtime, such as in AppConfig.ready()
     - The middleware identifies the request context from the X-POSTHOG-DISTINCT-ID header or the authenticated user's pk, so in a view where the user is already logged in a plain capture() is already attributed - do not wrap it in a context of its own
     - The middleware reads the user once, before the view runs, so a login request's context is identified as whoever the user was beforehand - nobody - and calling login() does not update it. A bare capture there is personless. Hook Django's user_logged_in signal and call identify_context(str(user.pk)) inside it: the signal runs inside the login request, so it fixes the ambient context and every later capture in that request is attributed. Logout views need no special handling, the user is still authenticated when the middleware runs - capture before calling logout()
     - Do NOT create custom middleware, distinct_id helpers, or conditional checks - the SDK handles these
 
   flask:
-    - Initialize PostHog globally in create_app() using posthog.api_key and posthog.host (NOT per-request)
-    - Manually capture exceptions with `posthog.capture_exception(e)` for error tracking since Flask has built-in error handlers
+    - Register PosthogFlaskIntegration with one Posthog() client, as the Flask docs show (NOT per-request)
+    - Do NOT add an @app.errorhandler(Exception) to call capture_exception() - the integration already captures unhandled route exceptions
     - Blueprint registration happens AFTER PostHog initialization in create_app()
 
   fastapi:
-    - Initialize PostHog in the lifespan context manager on startup using posthog.api_key and posthog.host
+    - Add PosthogASGIMiddleware, as the ASGI section of the Python docs shows. Create the client where you build the app, not in the lifespan - middleware cannot be added once the app starts
     - Call posthog.flush() in the lifespan shutdown to ensure all events are sent before the app exits
+    - Do NOT call capture_exception() in an @app.exception_handler(Exception) catch-all - the middleware already captures those exceptions
     - Use Pydantic Settings with @lru_cache decorator on get_settings() for caching and easy test overrides
     - Use FastAPI dependency injection (Depends) for accessing current_user and settings in route handlers
     - Use the same context API pattern as Flask/Django (with new_context(), identify_context(user_id), then capture())

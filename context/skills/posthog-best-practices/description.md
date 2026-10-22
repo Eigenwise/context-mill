@@ -160,7 +160,8 @@ If the project uses Django:
   context identified as whoever they were beforehand, which is nobody on a login.
   There, open a fresh context and identify it after the auth state changes, or the
   event is attributed to the wrong person.
-- Initialize PostHog in `AppConfig.ready()` from env vars.
+- Pass the `Posthog()` client to the middleware with `POSTHOG_MW_CLIENT`, as the
+  Django docs show.
 - Do not write custom middleware or `distinct_id` helpers first.
 - For management commands or other short-lived processes, call the underlying Python client's `posthog.shutdown()` before exit.
 - If this applies, consult [the Django docs](https://posthog.com/docs/libraries/django).
@@ -169,11 +170,10 @@ If the project uses Django:
 
 If the project uses Flask:
 
-- Initialize PostHog globally in `create_app()` before blueprint registration.
-- No middleware ships for Flask, so nothing binds identity for you: open a fresh
-  context at the top of each route and identify it there, preferring the
-  authenticated user id and falling back to the incoming `X-POSTHOG-DISTINCT-ID`.
-- Call `posthog.capture_exception(e)` from centralized error handlers.
+- Initialize PostHog in `create_app()` before blueprint registration, and
+  register `PosthogFlaskIntegration`, as the Flask docs show. It opens a context
+  for each request and captures route exceptions. Identify the user with
+  `identify_context(...)` in the route.
 - For CLI commands, jobs, or other short-lived processes, call the underlying Python client's `posthog.shutdown()` before exit.
 - If this applies, consult [the Flask docs](https://posthog.com/docs/libraries/flask).
 
@@ -181,10 +181,10 @@ If the project uses Flask:
 
 If the project uses FastAPI:
 
-- Initialize PostHog in lifespan startup and call `posthog.shutdown()` in lifespan shutdown.
-- No middleware ships for FastAPI either — bind identity per request yourself, in
-  a dependency or middleware that opens a context and identifies it, rather than
-  at each capture.
+- Add `PosthogASGIMiddleware`, as the Python docs show, and call
+  `posthog.shutdown()` in lifespan shutdown. The middleware opens a context for
+  each request and captures route exceptions. Identify the user in a dependency
+  rather than at each capture.
 - Prefer Pydantic Settings with `@lru_cache`.
 - Use `Depends` for current user and settings in handlers.
 - If this applies, consult [the Python docs](https://posthog.com/docs/libraries/python).
